@@ -68,7 +68,7 @@ def append_row(tab_name: str, row: dict):
 # --- Daten laden ---
 @st.cache_data
 def load_orte():
-    df = pd.read_csv("orte_geocoded.csv", dtype=str, sep=";")
+    df = pd.read_csv("orte_geocoded.csv", dtype=str, sep=";", encoding="utf-8-sig")
     df.columns = df.columns.str.strip()
     df = df[df["lat"].notna() & (df["lat"].str.strip() != "")]
     df["lat"] = df["lat"].astype(float)
