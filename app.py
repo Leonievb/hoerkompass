@@ -583,7 +583,7 @@ with ft_col1:
 
 with ft_col2:
     st.markdown("##### 📋 Rechtliches")
-    st.caption("Dieses Projekt verfolgt keine kommerziellen Zwecke. Es dient der barrierefreien Information für Schwerhörige.")
+    st.caption("Dieses Projekt verfolgt keine kommerziellen Zwecke. Es dient der Information für Schwerhörige.")
     st.markdown("**Quellenangabe**  \nAusgangsdaten teilweise basierend auf dem [Verzeichnis des Bund der Schwerhörigen e.V. Hamburg](https://www.bds-hh.de) (Stand Mai 2020), eigenständig und durch die Community geprüft und erweitert.")
     st.markdown("**Haftungsausschluss**  \nAlle Angaben ohne Gewähr. Trotz sorgfältiger Prüfung können Angaben veraltet oder unvollständig sein. Bei Fehlern freuen wir uns über eine Meldung über den Feedback-Button.")
     st.markdown("**Datenschutz**  \nDiese Seite speichert keine personenbezogenen Daten außer freiwillig hinterlassenen Kommentaren. Es werden keine Cookies gesetzt und keine Nutzungsdaten weitergegeben.")
