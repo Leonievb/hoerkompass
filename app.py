@@ -17,7 +17,7 @@ st.set_page_config(page_title="Hörkompass", page_icon="🦻", layout="wide")
 st.title("🦻 Hörkompass")
 st.caption("Veranstaltungsorte mit Hörunterstützung – finde barrierefreie Orte in deiner Nähe")
 st.markdown(
-    "Hör mehr vom Leben. Entdecke Veranstaltungsorte mit Induktionsschleifen, Roger-Systemen, "
+    "Mithören. Dabeisein. Erleben. Entdecke Veranstaltungsorte mit Induktionsschleifen, "
     "Untertiteln und mehr – geprüft, bewertet und empfohlen von der Community, für die Community. "
     "Klicke auf einen Ort für Details, **Bewertungen und Kommentare erscheinen unterhalb der Karte.**"
 )
