@@ -15,7 +15,7 @@ from google.oauth2.service_account import Credentials
 
 st.set_page_config(page_title="Hörkompass", page_icon="🦻", layout="wide")
 st.title("🦻 Hörkompass")
-st.caption("Veranstaltungsorte mit Hörunterstützung – finde barrierefreie Orte in deiner Nähe")
+st.caption("Veranstaltungsorte mit Hörunterstützung – finde barrierearme Orte in deiner Nähe")
 st.markdown(
     "Mithören. Dabeisein. Erleben. Entdecke Veranstaltungsorte mit Induktionsschleifen, "
     "Untertiteln und mehr – geprüft, bewertet und empfohlen von der Community, für die Community. "
@@ -543,8 +543,9 @@ if angeklickter_ort:
                     format_func=lambda x: AMPEL_OPTIONEN[x],
                 )
                 alle_anlage_labels = [v for k,v in ANLAGETYP_ICONS.items() if k != "anderes"]
-                verwendete_wahl = st.multiselect("Welche Anlage hast du verwendet?",
-                                                  options=alle_anlage_labels + ["➕ Anderes"])
+                verwendete_wahl = st.multiselect("Welche Anlage hast du verwendet? *",
+                                                 options=alle_anlage_labels + ["➕ Anderes"],
+                                                 placeholder="Wähle eine oder mehrere Anlagen...")
                 anlage_icon_zu_key = {v:k for k,v in ANLAGETYP_ICONS.items()}
                 verwendete_keys = [anlage_icon_zu_key.get(a,a) for a in verwendete_wahl if a != "➕ Anderes"]
                 anlage_sonstige = ""
@@ -552,15 +553,23 @@ if angeklickter_ort:
                     anlage_sonstige = st.text_input("Welche Anlage? Bitte beschreiben:", key="anlage_sonstige_kommentar")
                     if anlage_sonstige.strip():
                         verwendete_keys.append(f"anderes: {anlage_sonstige.strip()}")
-                geraet_wahl     = st.selectbox("Mit welchem Gerät hast du zugehört?", options=GERAET_OPTIONEN)
+                geraet_wahl     = st.selectbox("Mit welchem Gerät hast du zugehört? *", 
+                                               options=[None] + GERAET_OPTIONEN,
+                                               format_func=lambda x: "Wähle ein Gerät..." if x == None else x)
                 autor_input     = st.text_input("Dein Name (optional)", placeholder="Anonym")
-                kommentar_input = st.text_area("Kommentar", placeholder="Deine Erfahrung...", max_chars=500)
+                kommentar_input = st.text_area("Kommentar (optional)", placeholder="Deine Erfahrung...", max_chars=500)
                 if st.form_submit_button("Absenden"):
-                    save_kommentar(ort_id=ort_id, autor=autor_input,
-                                   kommentar=kommentar_input.strip(), ampel=ampel_wahl,
-                                   verwendete_anlage=verwendete_keys, geraet=geraet_wahl)
-                    clear_kommentare_cache()
-                    st.success("Danke! Dein Kommentar wird nach Prüfung freigeschaltet.")
+                    if st.form_submit_button("Absenden"):
+                        if not geraet_wahl:
+                            st.warning("Bitte wähle ein.")
+                        elif not ampel_wahl.strip():
+                            st.warning("Bitte wähle mindestens eine Anlage aus.")
+                        else:
+                            save_kommentar(ort_id=ort_id, autor=autor_input,
+                                           kommentar=kommentar_input.strip(), ampel=ampel_wahl,
+                                           verwendete_anlage=verwendete_keys, geraet=geraet_wahl)
+                            clear_kommentare_cache()
+                            st.success("Danke! Dein Kommentar wird nach Prüfung freigeschaltet.")
 
 # --- Impressum & Footer ---
 st.markdown("---")
