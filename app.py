@@ -525,7 +525,9 @@ if angeklickter_ort:
                         ampel_farbe = AMPEL_FARBEN.get(ampel, "#adb5bd")
                         meta_parts  = []
                         if geraet:  meta_parts.append(f"🦻 {geraet}")
-                        if anlagen: meta_parts.append(f"📡 {anlagen}")
+                        if anlagen:
+                            anlagen_labels = ", ".join([ANLAGETYP_ICONS.get(a.strip(), a.strip()) for a in anlagen.split(",")])
+                            meta_parts.append(f"📡 {anlagen_labels}")
                         meta_html = " · ".join(meta_parts)
                         st.markdown(
                             f'<div style="border-left:4px solid {ampel_farbe};padding-left:10px;margin-bottom:12px;">'
