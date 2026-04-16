@@ -536,16 +536,17 @@ if angeklickter_ort:
 
         with tab_schreiben:
             st.caption("Kommentare werden nach Prüfung freigeschaltet.")
-            with st.form(key=f"kommentar_form_{ort_id}", clear_on_submit=True):
+            if "form_counter" not in st.session_state:
+                st.session_state["form_counter"] = 0
+            with st.form(key=f"kommentar_form_{ort_id}_{st.session_state['form_counter']}", clear_on_submit=True):
                 ampel_wahl = st.radio(
                     "Wie hat die Höranlage funktioniert? *",
                     options=list(AMPEL_OPTIONEN.keys()),
                     format_func=lambda x: AMPEL_OPTIONEN[x],
                 )
                 alle_anlage_labels = [v for k,v in ANLAGETYP_ICONS.items() if k != "anderes"]
-                verwendete_wahl = st.multiselect("Welche Anlage hast du verwendet? *",
-                                                 options=alle_anlage_labels + ["➕ Anderes"],
-                                                 placeholder="Wähle eine oder mehrere Anlagen...")
+                verwendete_wahl = st.multiselect("Welche Anlage hast du verwendet?",
+                                                  options=alle_anlage_labels + ["➕ Anderes"])
                 anlage_icon_zu_key = {v:k for k,v in ANLAGETYP_ICONS.items()}
                 verwendete_keys = [anlage_icon_zu_key.get(a,a) for a in verwendete_wahl if a != "➕ Anderes"]
                 anlage_sonstige = ""
@@ -553,23 +554,15 @@ if angeklickter_ort:
                     anlage_sonstige = st.text_input("Welche Anlage? Bitte beschreiben:", key="anlage_sonstige_kommentar")
                     if anlage_sonstige.strip():
                         verwendete_keys.append(f"anderes: {anlage_sonstige.strip()}")
-                geraet_wahl     = st.selectbox("Mit welchem Gerät hast du zugehört? *", 
-                                               options=[None] + GERAET_OPTIONEN,
-                                               format_func=lambda x: "Wähle ein Gerät..." if x == None else x)
+                geraet_wahl     = st.selectbox("Mit welchem Gerät hast du zugehört?", options=GERAET_OPTIONEN)
                 autor_input     = st.text_input("Dein Name (optional)", placeholder="Anonym")
-                kommentar_input = st.text_area("Kommentar (optional)", placeholder="Deine Erfahrung...", max_chars=500)
+                kommentar_input = st.text_area("Kommentar", placeholder="Deine Erfahrung...", max_chars=500)
                 if st.form_submit_button("Absenden"):
-                    if st.form_submit_button("Absenden"):
-                        if not geraet_wahl:
-                            st.warning("Bitte wähle ein.")
-                        elif not ampel_wahl.strip():
-                            st.warning("Bitte wähle mindestens eine Anlage aus.")
-                        else:
-                            save_kommentar(ort_id=ort_id, autor=autor_input,
-                                           kommentar=kommentar_input.strip(), ampel=ampel_wahl,
-                                           verwendete_anlage=verwendete_keys, geraet=geraet_wahl)
-                            clear_kommentare_cache()
-                            st.success("Danke! Dein Kommentar wird nach Prüfung freigeschaltet.")
+                    save_kommentar(ort_id=ort_id, autor=autor_input,
+                                   kommentar=kommentar_input.strip(), ampel=ampel_wahl,
+                                   verwendete_anlage=verwendete_keys, geraet=geraet_wahl)
+                    clear_kommentare_cache()
+                    st.success("Danke! Dein Kommentar wird nach Prüfung freigeschaltet.")
 
 # --- Impressum & Footer ---
 st.markdown("---")
@@ -583,7 +576,7 @@ with ft_col1:
 
 with ft_col2:
     st.markdown("##### 📋 Rechtliches")
-    st.caption("Dieses Projekt verfolgt keine kommerziellen Zwecke. Es dient der Information für Schwerhörige.")
+    st.caption("Dieses Projekt verfolgt keine kommerziellen Zwecke. Es dient der barrierefreien Information für Schwerhörige.")
     st.markdown("**Quellenangabe**  \nAusgangsdaten teilweise basierend auf dem [Verzeichnis des Bund der Schwerhörigen e.V. Hamburg](https://www.bds-hh.de) (Stand Mai 2020), eigenständig und durch die Community geprüft und erweitert.")
     st.markdown("**Haftungsausschluss**  \nAlle Angaben ohne Gewähr. Trotz sorgfältiger Prüfung können Angaben veraltet oder unvollständig sein. Bei Fehlern freuen wir uns über eine Meldung über den Feedback-Button.")
     st.markdown("**Datenschutz**  \nDiese Seite speichert keine personenbezogenen Daten außer freiwillig hinterlassenen Kommentaren. Es werden keine Cookies gesetzt und keine Nutzungsdaten weitergegeben.")
