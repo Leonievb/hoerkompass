@@ -485,7 +485,7 @@ for _, row in df_filtered.iterrows():
         icon=folium.Icon(color=folium_farbe(kat), icon=folium_icon(kat), prefix="fa"),
     ).add_to(karte)
 
-karten_output = st_folium(karte, width="60%", height=400, returned_objects=["last_object_clicked_tooltip"])
+karten_output = st_folium(karte, width="60%", height=500, returned_objects=["last_object_clicked_tooltip"])
 neuer_klick = karten_output.get("last_object_clicked_tooltip")
 if neuer_klick and neuer_klick != st.session_state["angeklickter_ort"]:
     st.session_state["angeklickter_ort"] = neuer_klick; st.rerun()
