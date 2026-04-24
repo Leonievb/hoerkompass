@@ -494,6 +494,43 @@ if neuer_klick and neuer_klick != st.session_state["angeklickter_ort"]:
     st.session_state["angeklickter_ort"] = neuer_klick; st.rerun()
 
 # --- Kommentarbereich ---
+if not angeklickter_ort:
+    kommentare_alle = load_kommentare()
+    if not kommentare_alle.empty:
+        moderierte = kommentare_alle[
+            kommentare_alle["moderiert"].str.strip().str.lower() == "ja"
+        ].sort_values("datum", ascending=False).head(6)
+        if not moderierte.empty:
+            st.markdown("---")
+            st.markdown("### 💬 Neueste Kommentare der Community")
+            ort_id_zu_name = dict(zip(df["ort_id"].astype(str), df["name"].astype(str)))
+            for _, k in moderierte.iterrows():
+                ort_id_k   = val(k.get("ort_id"))
+                ort_name   = ort_id_zu_name.get(ort_id_k, ort_id_k)
+                ort_row    = df[df["ort_id"].astype(str) == ort_id_k]
+                farbe      = hex_farbe(val(ort_row.iloc[0].get("kategorie"))) if not ort_row.empty else "#adb5bd"
+                autor      = val(k.get("autor_name")) or "Anonym"
+                datum      = val(k.get("datum"))
+                text       = val(k.get("kommentar"))
+                ampel      = val(k.get("ampel"))
+                geraet     = val(k.get("geraet"))
+                anlagen    = val(k.get("verwendete_anlage"))
+                ampel_label = AMPEL_OPTIONEN.get(ampel, "")
+                ampel_farbe = AMPEL_FARBEN.get(ampel, "#adb5bd")
+                meta_parts  = []
+                if geraet:  meta_parts.append(f"🦻 {geraet}")
+                if anlagen:
+                    anlagen_labels = ", ".join([ANLAGETYP_ICONS.get(a.strip(), a.strip()) for a in anlagen.split(",")])
+                    meta_parts.append(f"📡 {anlagen_labels}")
+                meta_html = " · ".join(meta_parts)
+                st.markdown(
+                    f'<div style="border-left:4px solid {ampel_farbe};padding-left:10px;margin-bottom:12px;">'
+                    f'<span style="color:{farbe};font-weight:bold;">{ort_name}</span> · '
+                    f'<b>{autor}</b> · <span style="color:#888;font-size:12px;">{datum}</span><br>'
+                    f'<span style="color:{ampel_farbe};font-weight:bold;">{ampel_label}</span><br>'
+                    f'<span style="color:#888;font-size:12px;">{meta_html}</span><br>'
+                    f'{text}</div>', unsafe_allow_html=True)
+
 if angeklickter_ort:
     treffer = df[df["name"] == angeklickter_ort]
     if not treffer.empty:
