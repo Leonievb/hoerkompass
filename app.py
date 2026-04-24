@@ -171,10 +171,10 @@ ANLAGETYP_ICONS = {
     "audioguide":"🎧 Audioguide","rogeron_vorhanden":"🎙 Roger On (vorhanden)",
     "rogeron_mitbringen":"🎙 Roger On (mitbringen)",
     "sitzplatzreservierung":"💺 Sitzplatzreservierung",
-    "DGS (ausgewählt)":"🤟 DGS (ausgewählt)","keine":"❌ Keine",
+    "DGS (ausgewählt)":"🤟 DGS (ausgewählte Events)","keine":"❌ Keine",
     "anderes":"➕ Anderes (bitte beschreiben)",
 }
-KONFESSION_LABELS = {
+KONFESSION_LABELS = {^
     "ev":"Evangelisch-lutherisch","rk":"Römisch-katholisch","fk":"Freikirchlich",
     "rf":"Evangelisch-reformiert","oek":"Ökumenisch",
 }
