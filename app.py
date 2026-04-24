@@ -167,7 +167,8 @@ KATEGORIE_ICONS = {
 }
 ANLAGETYP_ICONS = {
     "induktion":"🔵 Induktion (T-Spule, Hörschleife)","infrarot":"🟡 Infrarot","funk":"🟠 Funk",
-    "mobile_connect":"📱 MobileConnect","untertitel":"💬 Untertitel",
+    "mobile_connect":"📱 MobileConnect",
+    "untertitel":"💬 Untertitel",
     "audioguide":"🎧 Audioguide","rogeron_vorhanden":"🎙 Roger On (vorhanden)",
     "rogeron_mitbringen":"🎙 Roger On (mitbringen)",
     "sitzplatzreservierung":"💺 Sitzplatzreservierung",
