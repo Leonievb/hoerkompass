@@ -171,6 +171,7 @@ ANLAGETYP_ICONS = {
     "audioguide":"🎧 Audioguide","rogeron_vorhanden":"🎙 Roger On (vorhanden)",
     "rogeron_mitbringen":"🎙 Roger On (mitbringen)",
     "sitzplatzreservierung":"💺 Sitzplatzreservierung",
+    "auracast":"🛜 Auracast"
     "DGS (ausgewählt)":"🤟 DGS (ausgewählte Events)","keine":"❌ Keine",
     "anderes":"➕ Anderes (bitte beschreiben)",
 }
