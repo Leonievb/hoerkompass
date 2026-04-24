@@ -293,7 +293,7 @@ def build_popup(row):
         {konfession_html}<hr style="margin:4px 0">
         📍 {adresse_zeile}<br><br>
         <b>Community-Bewertung</b><br>{ampel_html(ort_id)}<br><br>
-        <b>Mehr Zugänglichkeit durch...</b><br>{anlage}<br><br>
+        <b>Mehr Zugänglichkeit durch:</b><br>{anlage}<br><br>
         {ermaessigung_html}{hinweise_html}{verifiziert_html}{website_html}
         <hr style="margin:6px 0">{quelle_html}
     </div>"""
@@ -324,7 +324,7 @@ def zeige_sidebar_info(row):
     konfession_str    = f", {KONFESSION_LABELS.get(konfession,konfession)}" if konfession else ""
     adresse_zeile     = " ".join(filter(None,[adresse,plz,stadtteil,f"({bezirk})" if bezirk else ""])) or "–"
     anlage_zeilen     = "".join(f"{ANLAGETYP_ICONS.get(a,a)}<br>" for a in anlagetypen) if anlagetypen else ""
-    anlage_header     = "<b>Mehr Zugänglichkeit durch...</b><br>" if anlagetypen else ""
+    anlage_header     = "<b>Mehr Zugänglichkeit durch:</b><br>" if anlagetypen else ""
     ermaessigung_html = f"🎟 <b>Ermäßigung:</b><br> {ermaessigung}<br><br>" if ermaessigung else ""
     hinweise_html     = f"<b>Hinweise</b><br><i>{hinweise}</i><br><br>" if hinweise else ""
     website_html      = website_link_html(website)
