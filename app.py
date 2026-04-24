@@ -176,7 +176,7 @@ ANLAGETYP_ICONS = {
     "keine":"❌ Keine",
     "anderes":"➕ Anderes (bitte beschreiben)",
 }
-KONFESSION_LABELS = {^
+KONFESSION_LABELS = {
     "ev":"Evangelisch-lutherisch","rk":"Römisch-katholisch","fk":"Freikirchlich",
     "rf":"Evangelisch-reformiert","oek":"Ökumenisch",
 }
