@@ -598,7 +598,7 @@ if angeklickter_ort:
                         verwendete_keys.append(f"anderes: {anlage_sonstige.strip()}")
                 geraet_wahl     = st.selectbox("Mit welchem Gerät hast du zugehört? *", options=GERAET_OPTIONEN)
                 autor_input     = st.text_input("Dein Name (optional)", placeholder="Anonym")
-                kommentar_input = st.text_area("Kommentar", placeholder="Deine Erfahrung...", max_chars=500)
+                kommentar_input = st.text_area("Kommentar", placeholder="Deine Erfahrung...", max_chars=1000)
                 if st.form_submit_button("Absenden"):
                     if not verwendete_keys:
                         st.warning("Bitte wähle mindestens eine Anlage aus.")
