@@ -17,9 +17,10 @@ st.set_page_config(page_title="Hörkompass", page_icon="🦻", layout="wide")
 st.title("🦻 Hörkompass")
 st.caption("Veranstaltungsorte mit Hörunterstützung – finde barrierearme Orte in deiner Nähe")
 st.markdown(
-    "Mithören. Dabeisein. Erleben. Entdecke Veranstaltungsorte mit Induktionsschleifen, "
-    "Untertiteln und mehr – geprüft, bewertet und empfohlen von der Community, für die Community. "
-    "Klicke auf einen Ort für Details, **Bewertungen und Kommentare erscheinen unterhalb der Karte.**"
+    "## Mithören. Dabeisein. Erleben.  \n\n" \
+    "**Nicht alles, was “barrierefrei” ist, ist auch hörfreundlich.**  \n\n" \
+    "Deshalb gibt es den Hörkompass: Entdecke Veranstaltungsorte mit Hörunterstützung - geprüft, bewertet und empfohlen  von der Community für die Community.  \n\n" \
+    "Klicke auf einen Ort für Details. Bewertungen und Kommentare findest du direkt unterhalb der Karte." \
 )
 
 # --- Google Sheets Verbindung ---
@@ -363,9 +364,9 @@ def dialog_neuer_ort():
     kat_key  = kat_optionen[kat_labels.index(kat_wahl)]; kat_sonstige = ""
     if kat_key == "anderes": kat_sonstige = st.text_input("Welche Kategorie? Bitte beschreiben:")
     anlage_optionen = list(ANLAGETYP_ICONS.keys()); anlage_labels = list(ANLAGETYP_ICONS.values())
-    anlage_wahl = st.multiselect("Anlagetyp(en)", options=anlage_labels)
+    anlage_wahl = st.multiselect("Art der Hörunterstützung", options=anlage_labels)
     anlage_keys = [anlage_optionen[anlage_labels.index(l)] for l in anlage_wahl]; anlage_sonstige = ""
-    if "anderes" in anlage_keys: anlage_sonstige = st.text_input("Welcher Anlagetyp? Bitte beschreiben:")
+    if "anderes" in anlage_keys: anlage_sonstige = st.text_input("Welcher Art(en) der Hörunterstützung? Bitte beschreiben:")
     hinweise = st.text_area("Hinweise", placeholder="z.B. Induktionsschleife nur in den ersten 5 Reihen", max_chars=500)
     website  = st.text_input("Website oder E-Mail", placeholder="z.B. www.beispiel.de")
     email    = st.text_input("Deine E-Mail (optional)", placeholder="deine@email.de")
@@ -441,8 +442,8 @@ alle_anlagen = sorted(set(t.strip() for typen in df["anlagetyp"].dropna()
     for t in str(typen).split(",") if t.strip()))
 anlage_labels = [ANLAGETYP_ICONS.get(a,a) for a in alle_anlagen]
 anlage_label_zu_key = {v:k for k,v in ANLAGETYP_ICONS.items()}
-ausgewaehlte_anlage_labels = st.sidebar.multiselect("Anlagetyp", options=anlage_labels,
-    default=[], placeholder="Alle Anlagetypen anzeigen", key="anlagetyp_filter")
+ausgewaehlte_anlage_labels = st.sidebar.multiselect("Art der Hörunterstützung", options=anlage_labels,
+    default=[], placeholder="Alle Arten der Hörunterstützung anzeigen", key="anlagetyp_filter")
 ausgewaehlte_anlagen = [anlage_label_zu_key.get(l,l) for l in ausgewaehlte_anlage_labels]
 
 df_filtered = df.copy()
@@ -587,13 +588,13 @@ if angeklickter_ort:
                     format_func=lambda x: AMPEL_OPTIONEN[x],
                 )
                 alle_anlage_labels = [v for k,v in ANLAGETYP_ICONS.items() if k != "anderes"]
-                verwendete_wahl = st.multiselect("Welche Anlage hast du verwendet? *",
+                verwendete_wahl = st.multiselect("Welche Art(en) der Hörunterstützung hast du verwendet? *",
                                                   options=alle_anlage_labels + ["➕ Anderes"])
                 anlage_icon_zu_key = {v:k for k,v in ANLAGETYP_ICONS.items()}
                 verwendete_keys = [anlage_icon_zu_key.get(a,a) for a in verwendete_wahl if a != "➕ Anderes"]
                 anlage_sonstige = ""
                 if "➕ Anderes" in verwendete_wahl:
-                    anlage_sonstige = st.text_input("Welche Anlage? Bitte beschreiben:", key="anlage_sonstige_kommentar")
+                    anlage_sonstige = st.text_input("Welche Arten der Hörunterstützung? Bitte beschreiben:", key="anlage_sonstige_kommentar")
                     if anlage_sonstige.strip():
                         verwendete_keys.append(f"anderes: {anlage_sonstige.strip()}")
                 geraet_wahl     = st.selectbox("Mit welchem Gerät hast du zugehört? *", options=GERAET_OPTIONEN)
@@ -601,7 +602,7 @@ if angeklickter_ort:
                 kommentar_input = st.text_area("Kommentar", placeholder="Deine Erfahrung...", max_chars=1000)
                 if st.form_submit_button("Absenden"):
                     if not verwendete_keys:
-                        st.warning("Bitte wähle mindestens eine Anlage aus.")
+                        st.warning("Bitte wähle mindestens eine Art der Hörunterstützung aus.")
                     elif not geraet_wahl:
                         st.warning("Bitte wähle ein Gerät aus.")
                     else:
