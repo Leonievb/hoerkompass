@@ -17,7 +17,7 @@ st.set_page_config(page_title="Hörkompass", page_icon="🦻", layout="wide")
 st.title("🦻 Hörkompass")
 st.caption("Veranstaltungsorte mit Hörunterstützung – finde barrierearme Orte in deiner Nähe")
 st.markdown(
-    "## Mithören. Dabeisein. Erleben.  \n\n" \
+    "### _Mithören. Dabeisein. Erleben._  \n\n" \
     "**Nicht alles, was “barrierefrei” ist, ist auch hörfreundlich.**  \n\n" \
     "Deshalb gibt es den Hörkompass: Entdecke Veranstaltungsorte mit Hörunterstützung - geprüft, bewertet und empfohlen  von der Community für die Community.  \n\n" \
     "Klicke auf einen Ort für Details. Bewertungen und Kommentare findest du direkt unterhalb der Karte." \
