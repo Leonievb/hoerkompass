@@ -621,7 +621,7 @@ ft_col1, ft_col2 = st.columns([1, 2])
 
 with ft_col1:
     st.markdown("##### 🦻 Hörkompass")
-    st.markdown("Leonie & Marina \nHamburg  \n📧 leonie@vonberlin.de")
+    st.markdown("Leonie & Marina  \nHamburg  \n📧 leonie@vonberlin.de")
 
 with ft_col2:
     st.markdown("##### 📋 Rechtliches")
