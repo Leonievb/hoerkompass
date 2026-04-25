@@ -617,11 +617,11 @@ if angeklickter_ort:
 st.markdown("---")
 st.markdown("#### Impressum")
 
-ft_col1, ft_col2, ft_col3 = st.columns([1, 2, 1])
+ft_col1, ft_col2 = st.columns([1, 2])
 
 with ft_col1:
     st.markdown("##### 🦻 Hörkompass")
-    st.markdown("Leonie von Berlin  \nHamburg  \n📧 leonie@vonberlin.de")
+    st.markdown("Leonie & Marina \nHamburg  \n📧 leonie@vonberlin.de")
 
 with ft_col2:
     st.markdown("##### 📋 Rechtliches")
@@ -630,12 +630,12 @@ with ft_col2:
     st.markdown("**Haftungsausschluss**  \nAlle Angaben ohne Gewähr. Trotz sorgfältiger Prüfung können Angaben veraltet oder unvollständig sein. Bei Fehlern freuen wir uns über eine Meldung über den Feedback-Button.")
     st.markdown("**Datenschutz**  \nDiese Seite speichert keine personenbezogenen Daten außer freiwillig hinterlassenen Kommentaren. Es werden keine Cookies gesetzt und keine Nutzungsdaten weitergegeben.")
 
-with ft_col3:
-    st.markdown("##### 🤝 Partner")
-    try:
-        st.image("logo_doa.png", width=120)
-    except Exception:
-        pass
-    st.markdown("**Deaf Ohr Alive (DOA) Nord**  \nTeil von DOA  \n[www.deaf-ohr-alive.de](https://www.deaf-ohr-alive.de)")
+# with ft_col3:
+#     st.markdown("##### 🤝 Partner")
+#     try:
+#         st.image("logo_doa.png", width=120)
+#     except Exception:
+#         pass
+#     st.markdown("**Deaf Ohr Alive (DOA) Nord**  \nTeil von DOA  \n[www.deaf-ohr-alive.de](https://www.deaf-ohr-alive.de)")
 
 st.caption("Hörkompass · 2026")
