@@ -12,8 +12,15 @@ import os
 import json
 import gspread
 from google.oauth2.service_account import Credentials
+import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Hörkompass", page_icon="🦻", layout="wide")
+
+# --- Umami Analytics ---
+components.html(
+    '<script defer src="https://cloud.umami.is/script.js" data-website-id="ddf826b9-80ab-431f-a97c-1828d1bd9d4a"></script>',
+    height=0,
+)
 st.title("🦻 Hörkompass")
 st.caption("Veranstaltungsorte mit Hörunterstützung – finde barrierearme Orte in deiner Nähe")
 st.markdown(
