@@ -17,10 +17,10 @@ st.set_page_config(page_title="Hörkompass", page_icon="🦻", layout="wide")
 st.title("🦻 Hörkompass")
 st.caption("Veranstaltungsorte mit Hörunterstützung – finde barrierearme Orte in deiner Nähe")
 st.markdown(
-    "### _Mithören. Dabeisein. Erleben._  \n\n" \
-    "**Nicht alles, was “barrierefrei” ist, ist auch hörfreundlich.**  \n\n" \
-    "Deshalb gibt es den Hörkompass: Entdecke Veranstaltungsorte mit Hörunterstützung - geprüft, bewertet und empfohlen  von der Community für die Community.  \n\n" \
-    "Klicke auf einen Ort für Details. Bewertungen und Kommentare findest du direkt unterhalb der Karte." \
+    "### _Mithören. Dabeisein. Erleben._  \n\n"
+    "**Nicht alles, was barrierefrei ist, ist auch hörfreundlich.**  \n\n"
+    "Deshalb gibt es den Hörkompass: Entdecke Veranstaltungsorte mit Hörunterstützung - geprüft, bewertet und empfohlen von der Community für die Community.  \n\n"
+    "Klicke auf einen Ort für Details. Bewertungen und Kommentare findest du direkt unterhalb der Karte."
 )
 
 # --- Google Sheets Verbindung ---
@@ -30,12 +30,9 @@ SCOPES   = ["https://www.googleapis.com/auth/spreadsheets",
 
 @st.cache_resource
 def get_gsheet_client():
-    """Verbindung zu Google Sheets – lokal via JSON-Datei, online via Streamlit Secrets."""
     if os.path.exists("google_credentials.json"):
-        # Lokal: JSON-Datei direkt verwenden
         creds = Credentials.from_service_account_file("google_credentials.json", scopes=SCOPES)
     else:
-        # Streamlit Cloud: Credentials aus st.secrets
         creds = Credentials.from_service_account_info(
             st.secrets["gcp_service_account"], scopes=SCOPES
         )
@@ -47,7 +44,6 @@ def get_worksheet(tab_name: str):
     return sheet.worksheet(tab_name)
 
 def sheet_to_df(tab_name: str) -> pd.DataFrame:
-    """Liest einen Tab als DataFrame."""
     try:
         ws   = get_worksheet(tab_name)
         data = ws.get_all_records()
@@ -56,11 +52,18 @@ def sheet_to_df(tab_name: str) -> pd.DataFrame:
         return pd.DataFrame()
 
 def clear_kommentare_cache():
-    """Cache nach dem Schreiben leeren damit neue Daten sofort sichtbar sind."""
     load_kommentare.clear()
 
+def get_bewertete_ort_ids() -> set:
+    """Gibt alle ort_ids zurück die mindestens eine freigeschaltete Bewertung haben."""
+    kommentare = load_kommentare()
+    if kommentare.empty:
+        return set()
+    return set(kommentare[
+        kommentare["moderiert"].str.strip().str.lower() == "ja"
+    ]["ort_id"].unique())
+
 def append_row(tab_name: str, row: dict):
-    """Hängt eine neue Zeile an den Tab an."""
     ws     = get_worksheet(tab_name)
     header = ws.row_values(1)
     neue_zeile = [str(row.get(col, "")) for col in header]
@@ -78,7 +81,6 @@ def load_orte():
 
 @st.cache_data(ttl=60)
 def load_kommentare() -> pd.DataFrame:
-    """Lädt Kommentare aus Google Sheets – gecacht für 60 Sekunden."""
     df = sheet_to_df("kommentare")
     for col in ["ampel","verwendete_anlage","geraet"]:
         if col not in df.columns:
@@ -446,6 +448,8 @@ ausgewaehlte_anlage_labels = st.sidebar.multiselect("Art der Hörunterstützung"
     default=[], placeholder="Alle Arten der Hörunterstützung anzeigen", key="anlagetyp_filter")
 ausgewaehlte_anlagen = [anlage_label_zu_key.get(l,l) for l in ausgewaehlte_anlage_labels]
 
+nur_bewertet = st.sidebar.checkbox("⭐ Nur bewertete Orte anzeigen", value=False)
+
 df_filtered = df.copy()
 suche_key  = f"suche_{st.session_state['suche_counter']}"
 suche_wert = st.session_state.get(suche_key,"").strip()
@@ -461,6 +465,9 @@ if ausschliessen_keys:
 if ausgewaehlte_anlagen:
     df_filtered = df_filtered[df_filtered["anlagetyp"].apply(
         lambda x: any(t in ausgewaehlte_anlagen for t in get_anlagetyp_list(x)) if pd.notna(x) else False)]
+if nur_bewertet:
+    bewertete_ids = get_bewertete_ort_ids()
+    df_filtered = df_filtered[df_filtered["ort_id"].isin(bewertete_ids)]
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("**Legende**")
@@ -494,7 +501,7 @@ neuer_klick = karten_output.get("last_object_clicked_tooltip")
 if neuer_klick and neuer_klick != st.session_state["angeklickter_ort"]:
     st.session_state["angeklickter_ort"] = neuer_klick; st.rerun()
 
-# --- Kommentarbereich ---
+# --- Neueste Kommentare (wenn kein Ort ausgewählt) ---
 if not angeklickter_ort:
     kommentare_alle = load_kommentare()
     if not kommentare_alle.empty:
@@ -532,6 +539,7 @@ if not angeklickter_ort:
                     f'<span style="color:#888;font-size:12px;">{meta_html}</span><br>'
                     f'{text}</div>', unsafe_allow_html=True)
 
+# --- Kommentarbereich für ausgewählten Ort ---
 if angeklickter_ort:
     treffer = df[df["name"] == angeklickter_ort]
     if not treffer.empty:
@@ -583,7 +591,7 @@ if angeklickter_ort:
                 st.session_state["form_counter"] = 0
             with st.form(key=f"kommentar_form_{ort_id}_{st.session_state['form_counter']}", clear_on_submit=True):
                 ampel_wahl = st.radio(
-                    "Wie hat die Höranlage funktioniert? *",
+                    "Wie hat die Hörunterstützung funktioniert? *",
                     options=list(AMPEL_OPTIONEN.keys()),
                     format_func=lambda x: AMPEL_OPTIONEN[x],
                 )
@@ -629,13 +637,5 @@ with ft_col2:
     st.markdown("**Quellenangabe**  \nAusgangsdaten teilweise basierend auf dem [Verzeichnis des Bund der Schwerhörigen e.V. Hamburg](https://www.bds-hh.de) (Stand Mai 2020), eigenständig und durch die Community geprüft und erweitert.")
     st.markdown("**Haftungsausschluss**  \nAlle Angaben ohne Gewähr. Trotz sorgfältiger Prüfung können Angaben veraltet oder unvollständig sein. Bei Fehlern freuen wir uns über eine Meldung über den Feedback-Button.")
     st.markdown("**Datenschutz**  \nDiese Seite speichert keine personenbezogenen Daten außer freiwillig hinterlassenen Kommentaren. Es werden keine Cookies gesetzt und keine Nutzungsdaten weitergegeben.")
-
-# with ft_col3:
-#     st.markdown("##### 🤝 Partner")
-#     try:
-#         st.image("logo_doa.png", width=120)
-#     except Exception:
-#         pass
-#     st.markdown("**Deaf Ohr Alive (DOA) Nord**  \nTeil von DOA  \n[www.deaf-ohr-alive.de](https://www.deaf-ohr-alive.de)")
 
 st.caption("Hörkompass · 2026")
