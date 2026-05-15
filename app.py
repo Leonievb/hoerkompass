@@ -13,6 +13,9 @@ import json
 import gspread
 from google.oauth2.service_account import Credentials
 import streamlit.components.v1 as components
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 st.set_page_config(page_title="Hörkompass", page_icon="🦻", layout="wide")
 
@@ -75,6 +78,26 @@ def append_row(tab_name: str, row: dict):
     header = ws.row_values(1)
     neue_zeile = [str(row.get(col, "")) for col in header]
     ws.append_row(neue_zeile, value_input_option="RAW")
+
+# --- E-Mail Benachrichtigung ---
+def send_notification(betreff: str, inhalt: str):
+    """Sendet eine Benachrichtigungs-E-Mail an die Admins."""
+    try:
+        sender   = st.secrets.get("EMAIL_SENDER", "")
+        password = st.secrets.get("EMAIL_PASSWORD", "")
+        if not sender or not password:
+            return  # Lokal ohne Secrets – einfach überspringen
+        empfaenger = ["leonie@vonberlin.de"]
+        msg = MIMEMultipart()
+        msg["From"]    = sender
+        msg["To"]      = ", ".join(empfaenger)
+        msg["Subject"] = f"🦻 Hörkompass: {betreff}"
+        msg.attach(MIMEText(inhalt, "plain", "utf-8"))
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(sender, password)
+            server.sendmail(sender, empfaenger, msg.as_string())
+    except Exception:
+        pass  # E-Mail-Fehler sollen die App nicht zum Absturz bringen
 
 # --- Daten laden ---
 @st.cache_data
@@ -388,6 +411,10 @@ def dialog_neuer_ort():
             else:
                 save_neuer_ort(name.strip(),adresse.strip(),kat_key,kat_sonstige.strip(),
                                anlage_keys,anlage_sonstige.strip(),hinweise.strip(),website.strip(),email.strip())
+                send_notification(
+                    "Neuer Ort vorgeschlagen",
+                    f"Name: {name.strip()}\nAdresse: {adresse.strip()}\nKategorie: {kat_key}\nHinweise: {hinweise.strip()}\nWebsite: {website.strip()}\nEinsender: {email.strip()}"
+                )
                 st.success("Danke! Dein Vorschlag wurde gespeichert und wird geprüft.")
                 st.balloons()
     with col_cancel:
@@ -411,6 +438,10 @@ def dialog_feedback():
             elif not nachricht.strip(): st.warning("Bitte gib eine Beschreibung ein.")
             else:
                 save_feedback(typ_key,betreff.strip(),nachricht.strip(),email.strip())
+                send_notification(
+                    f"Neues Feedback: {betreff.strip()}",
+                    f"Typ: {typ_label}\nBetreff: {betreff.strip()}\nNachricht:\n{nachricht.strip()}\nEinsender: {email.strip()}"
+                )
                 st.success("Danke für dein Feedback! 🙏"); st.balloons()
     with col_cancel:
         if st.button("Abbrechen", use_container_width=True, key="cancel_feedback"): st.rerun()
@@ -520,16 +551,16 @@ if not angeklickter_ort:
             st.markdown("### 💬 Neueste Kommentare der Community")
             ort_id_zu_name = dict(zip(df["ort_id"].astype(str), df["name"].astype(str)))
             for _, k in moderierte.iterrows():
-                ort_id_k   = val(k.get("ort_id"))
-                ort_name   = ort_id_zu_name.get(ort_id_k, ort_id_k)
-                ort_row    = df[df["ort_id"].astype(str) == ort_id_k]
-                farbe      = hex_farbe(val(ort_row.iloc[0].get("kategorie"))) if not ort_row.empty else "#adb5bd"
-                autor      = val(k.get("autor_name")) or "Anonym"
-                datum      = val(k.get("datum"))
-                text       = val(k.get("kommentar"))
-                ampel      = val(k.get("ampel"))
-                geraet     = val(k.get("geraet"))
-                anlagen    = val(k.get("verwendete_anlage"))
+                ort_id_k    = val(k.get("ort_id"))
+                ort_name    = ort_id_zu_name.get(ort_id_k, ort_id_k)
+                ort_row     = df[df["ort_id"].astype(str) == ort_id_k]
+                farbe       = hex_farbe(val(ort_row.iloc[0].get("kategorie"))) if not ort_row.empty else "#adb5bd"
+                autor       = val(k.get("autor_name")) or "Anonym"
+                datum       = val(k.get("datum"))
+                text        = val(k.get("kommentar"))
+                ampel       = val(k.get("ampel"))
+                geraet      = val(k.get("geraet"))
+                anlagen     = val(k.get("verwendete_anlage"))
                 ampel_label = AMPEL_OPTIONEN.get(ampel, "")
                 ampel_farbe = AMPEL_FARBEN.get(ampel, "#adb5bd")
                 meta_parts  = []
@@ -571,12 +602,12 @@ if angeklickter_ort:
                     st.caption("Noch keine freigeschalteten Kommentare für diesen Ort.")
                 else:
                     for _, k in kommentare_ort.iterrows():
-                        autor   = val(k.get("autor_name")) or "Anonym"
-                        datum   = val(k.get("datum"))
-                        text    = val(k.get("kommentar"))
-                        ampel   = val(k.get("ampel"))
-                        geraet  = val(k.get("geraet"))
-                        anlagen = val(k.get("verwendete_anlage"))
+                        autor       = val(k.get("autor_name")) or "Anonym"
+                        datum       = val(k.get("datum"))
+                        text        = val(k.get("kommentar"))
+                        ampel       = val(k.get("ampel"))
+                        geraet      = val(k.get("geraet"))
+                        anlagen     = val(k.get("verwendete_anlage"))
                         ampel_label = AMPEL_OPTIONEN.get(ampel, "")
                         ampel_farbe = AMPEL_FARBEN.get(ampel, "#adb5bd")
                         meta_parts  = []
@@ -626,6 +657,10 @@ if angeklickter_ort:
                                        verwendete_anlage=verwendete_keys, geraet=geraet_wahl)
                         clear_kommentare_cache()
                         st.session_state["form_counter"] = st.session_state.get("form_counter", 0) + 1
+                        send_notification(
+                            f"Neuer Kommentar zu {angeklickter_ort}",
+                            f"Ort: {angeklickter_ort}\nAutor: {autor_input or 'Anonym'}\nAmpel: {AMPEL_OPTIONEN.get(ampel_wahl, ampel_wahl)}\nGerät: {geraet_wahl}\nKommentar:\n{kommentar_input.strip()}"
+                        )
                         st.success("Danke! Dein Kommentar wird nach Prüfung freigeschaltet.")
 
 # --- Impressum & Footer ---
