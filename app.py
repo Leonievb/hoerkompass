@@ -26,7 +26,7 @@ components.html(
 )
 st.title("🦻 Hörkompass")
 st.caption("Veranstaltungsorte mit Hörunterstützung – finde barrierearme Orte in deiner Nähe")
-st.write(f"EMAIL_SENDER vorhanden: {'EMAIL_SENDER' in st.secrets}")
+st.write(dict(st.secrets))
 st.markdown(
     "### _Mithören. Dabeisein. Erleben._  \n\n"
     "**Nicht alles, was barrierefrei ist, ist auch hörfreundlich.**  \n\n"
@@ -84,8 +84,8 @@ def append_row(tab_name: str, row: dict):
 def send_notification(betreff: str, inhalt: str):
     """Sendet eine Benachrichtigungs-E-Mail an die Admins."""
     try:
-        sender   = st.secrets["EMAIL_SENDER"]
-        password = st.secrets["EMAIL_PASSWORD"]
+        sender   = st.secrets["email"]["EMAIL_SENDER"]
+        password = st.secrets["email"]["EMAIL_PASSWORD"]
         empfaenger = ["leonie@vonberlin.de"]
         msg = MIMEMultipart()
         msg["From"]    = sender
