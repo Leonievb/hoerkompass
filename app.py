@@ -26,7 +26,6 @@ components.html(
 )
 st.title("🦻 Hörkompass")
 st.caption("Veranstaltungsorte mit Hörunterstützung – finde barrierearme Orte in deiner Nähe")
-st.write(dict(st.secrets))
 st.markdown(
     "### _Mithören. Dabeisein. Erleben._  \n\n"
     "**Nicht alles, was barrierefrei ist, ist auch hörfreundlich.**  \n\n"
