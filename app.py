@@ -83,21 +83,21 @@ def append_row(tab_name: str, row: dict):
 def send_notification(betreff: str, inhalt: str):
     """Sendet eine Benachrichtigungs-E-Mail an die Admins."""
     try:
-        sender   = st.secrets.get("EMAIL_SENDER", "")
-        password = st.secrets.get("EMAIL_PASSWORD", "")
-        if not sender or not password:
-            return  # Lokal ohne Secrets – einfach überspringen
+        sender   = st.secrets["EMAIL_SENDER"]
+        password = st.secrets["EMAIL_PASSWORD"]
         empfaenger = ["leonie@vonberlin.de"]
         msg = MIMEMultipart()
         msg["From"]    = sender
         msg["To"]      = ", ".join(empfaenger)
-        msg["Subject"] = f"🦻 Hörkompass: {betreff}"
+        msg["Subject"] = f"Hörkompass: {betreff}"
         msg.attach(MIMEText(inhalt, "plain", "utf-8"))
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
             server.login(sender, password)
             server.sendmail(sender, empfaenger, msg.as_string())
-    except Exception:
-        pass  # E-Mail-Fehler sollen die App nicht zum Absturz bringen
+    except KeyError:
+        pass  # Lokal ohne Secrets – überspringen
+    except Exception as e:
+        st.warning(f"E-Mail konnte nicht gesendet werden: {e}")
 
 # --- Daten laden ---
 @st.cache_data
