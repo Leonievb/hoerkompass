@@ -386,9 +386,9 @@ def zeige_sidebar_info(row):
     st.sidebar.markdown("---")
 
 # --- Dialoge ---
-@st.dialog("➕ Neuen Ort vorschlagen", width="large")
+@st.dialog("➕ Neuen Veranstaltungsort vorschlagen", width="large")
 def dialog_neuer_ort():
-    st.caption("Vielen Dank für deinen Beitrag! Vorschläge werden nach Prüfung in die Karte aufgenommen.")
+    st.caption("Vielen Dank für deinen Beitrag! Du kannst hier einen konkreten Veranstaltungsort (z.B. ein Kino, Theater oder Museum) vorschlagen – keinen Ort oder eine Stadt. Vorschläge werden nach Prüfung in die Karte aufgenommen.")
     name    = st.text_input("Name des Ortes *", placeholder="z.B. Kulturzentrum Altona")
     addr_col1, addr_col2, addr_col3 = st.columns([3, 1, 2])
     with addr_col1:
@@ -421,7 +421,7 @@ def dialog_neuer_ort():
                 save_neuer_ort(name.strip(),adresse.strip(),kat_key,kat_sonstige.strip(),
                                anlage_keys,anlage_sonstige.strip(),hinweise.strip(),website.strip(),email.strip())
                 send_notification(
-                    "Neuer Ort vorgeschlagen",
+                    "Neuer Veranstaltungsort vorgeschlagen",
                     f"Name: {name.strip()}\nAdresse: {adresse.strip()}\nKategorie: {kat_key}\nHinweise: {hinweise.strip()}\nWebsite: {website.strip()}\nEinsender: {email.strip()}"
                 )
                 st.success("Danke! Dein Vorschlag wurde gespeichert und wird geprüft.")
@@ -528,7 +528,7 @@ st.sidebar.caption(f"{len(df_filtered)} Orte angezeigt von {len(df)} gesamt")
 # --- Buttons ---
 btn_col1, btn_col2, _ = st.columns([2,2,6])
 with btn_col1:
-    if st.button("➕ Ort vorschlagen", type="secondary", use_container_width=True): dialog_neuer_ort()
+    if st.button("➕ Veranstaltungsort vorschlagen", type="secondary", use_container_width=True): dialog_neuer_ort()
 with btn_col2:
     if st.button("💡 Feedback & Ideen", type="secondary", use_container_width=True): dialog_feedback()
 
