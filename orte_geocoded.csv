@@ -1,4 +1,4 @@
-﻿ort_id;name;kategorie;unterkategorie;adresse;plz;stadtteil;bezirk;website;anlagetyp;anlage_hinweise;Ermäßigung;konfession;quelle;quelle_datum;verifiziert;lat;lon;hinzugefügt
+﻿ort_id;name;kategorie;unterkategorie;adresse;plz;stadtteil;bezirk;website;anlagetyp;anlage_hinweise;Ermäßigung;konfession;quelle;quelle_datum;verifiziert;lat;lon;date_added
 T001;Altonaer Theater;theater;;Museumsstraße 17;22765;Ottensen;Altona;https://www.altonaer-Theater.de/service/barrierefreiheit/ ;mobile_connect;Eigenes Smartphone oder iPod zum Ausleihen;ja;nan;Webseite;26. März 2026;nein;53.548477;9.934263;
 T002;Deutsches Schauspielhaus;theater;;Kirchenallee 39;20099;St. Georg;Hamburg-Mitte;https://schauspielhaus.de/ihr-besuch;mobile_connect;;GdB50;nan;Webseite;26. März 2026;nein;53.554497;10.008936;
 T003;Ernst-Deutsch-Theater;theater;;Friedrich-Schütterplatz 1;22087;Uhlenhorst;Hamburg-Nord;www.ernst-deutsch-Theater.de/barrierefreiheit/;funk;Kopfhörerverleih;GdB50;nan;Webseite;26. März 2026;nein;53.569245;10.026195;
