@@ -569,8 +569,8 @@ if not angeklickter_ort:
     # Neue Orte als Updates
     hinzu_col = "date_added" if "date_added" in df.columns else None
     if hinzu_col:
-        st.write(f"date_added Spalte gefunden: {hinzu_col}, Orte mit Datum: {len(neue_orte) if hinzu_col else 0}")
         neue_orte = df[df[hinzu_col].notna() & (df[hinzu_col].str.strip() != "")].copy()
+        st.write(f"date_added Spalte gefunden: {hinzu_col}, Orte mit Datum: {len(neue_orte) if hinzu_col else 0}")
         for _, o in neue_orte.iterrows():
             updates.append({
                 "typ":   "neuer_ort",
