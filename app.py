@@ -548,18 +548,57 @@ neuer_klick = karten_output.get("last_object_clicked_tooltip")
 if neuer_klick and neuer_klick != st.session_state["angeklickter_ort"]:
     st.session_state["angeklickter_ort"] = neuer_klick; st.rerun()
 
-# --- Neueste Kommentare (wenn kein Ort ausgewählt) ---
+# --- Neueste Updates (wenn kein Ort ausgewählt) ---
 if not angeklickter_ort:
     kommentare_alle = load_kommentare()
+    ort_id_zu_name = dict(zip(df["ort_id"].astype(str), df["name"].astype(str)))
+
+    # Kommentare als Updates
+    updates = []
     if not kommentare_alle.empty:
         moderierte = kommentare_alle[
             kommentare_alle["moderiert"].str.strip().str.lower() == "ja"
-        ].sort_values("datum", ascending=False).head(6)
-        if not moderierte.empty:
-            st.markdown("---")
-            st.markdown("### 💬 Neueste Kommentare der Community")
-            ort_id_zu_name = dict(zip(df["ort_id"].astype(str), df["name"].astype(str)))
-            for _, k in moderierte.iterrows():
+        ].copy()
+        for _, k in moderierte.iterrows():
+            updates.append({
+                "typ":    "kommentar",
+                "datum":  val(k.get("datum")),
+                "data":   k,
+            })
+
+    # Neue Orte als Updates
+    neue_orte = df[df["hinzugefügt"].notna() & (df["hinzugefügt"].str.strip() != "")].copy()
+    for _, o in neue_orte.iterrows():
+        updates.append({
+            "typ":   "neuer_ort",
+            "datum": val(o.get("hinzugefügt")),
+            "data":  o,
+        })
+
+    # Sortieren nach Datum (neueste zuerst) und auf 10 begrenzen
+    def parse_datum(d):
+        """Versucht deutsches Datum zu parsen für Sortierung."""
+        monate = {"Januar":1,"Februar":2,"März":3,"April":4,"Mai":5,"Juni":6,
+                  "Juli":7,"August":8,"September":9,"Oktober":10,"November":11,"Dezember":12}
+        try:
+            # Format: "15. Mai 2026"
+            teile = d.replace(".", "").split()
+            if len(teile) == 3:
+                return (int(teile[2]), monate.get(teile[1], 0), int(teile[0]))
+            # Format: "2026-05-15"
+            return tuple(int(x) for x in d.split("-"))
+        except Exception:
+            return (0, 0, 0)
+
+    updates.sort(key=lambda x: parse_datum(x["datum"]), reverse=True)
+    updates = updates[:10]
+
+    if updates:
+        st.markdown("---")
+        st.markdown("### 🔔 Neueste Updates der Community")
+        for u in updates:
+            if u["typ"] == "kommentar":
+                k           = u["data"]
                 ort_id_k    = val(k.get("ort_id"))
                 ort_name    = ort_id_zu_name.get(ort_id_k, ort_id_k)
                 ort_row     = df[df["ort_id"].astype(str) == ort_id_k]
@@ -580,11 +619,32 @@ if not angeklickter_ort:
                 meta_html = " · ".join(meta_parts)
                 st.markdown(
                     f'<div style="border-left:4px solid {ampel_farbe};padding-left:10px;margin-bottom:12px;">'
+                    f'<span style="color:#888;font-size:11px;font-weight:bold;">💬 Kommentar</span><br>'
                     f'<span style="color:{farbe};font-weight:bold;">{ort_name}</span> · '
                     f'<b>{autor}</b> · <span style="color:#888;font-size:12px;">{datum}</span><br>'
                     f'<span style="color:{ampel_farbe};font-weight:bold;">{ampel_label}</span><br>'
                     f'<span style="color:#888;font-size:12px;">{meta_html}</span><br>'
                     f'{text}</div>', unsafe_allow_html=True)
+
+            elif u["typ"] == "neuer_ort":
+                o        = u["data"]
+                ort_name = val(o.get("name")) or "–"
+                datum    = val(o.get("hinzugefügt"))
+                farbe    = hex_farbe(val(o.get("kategorie")))
+                kat      = KATEGORIE_LABELS.get(val(o.get("kategorie")), val(o.get("kategorie")))
+                anlage   = format_anlagetyp_html(val(o.get("anlagetyp")))
+                adresse  = val(o.get("adresse"))
+                hinweise = val(o.get("anlage_hinweise"))
+                st.markdown(
+                    f'<div style="border-left:4px solid {farbe};padding-left:10px;margin-bottom:12px;">'
+                    f'<span style="color:#888;font-size:11px;font-weight:bold;">🗺️ Neuer Ort</span><br>'
+                    f'<span style="color:{farbe};font-weight:bold;">{ort_name}</span> · '
+                    f'<span style="color:#888;font-size:12px;">{datum}</span><br>'
+                    f'<span style="color:gray;font-size:12px;">{kat}</span>'
+                    f'{f"<br>📍 {adresse}" if adresse else ""}'
+                    f'{f"<br>{anlage}" if anlage != "–" else ""}'
+                    f'{f"<br><i>{hinweise}</i>" if hinweise else ""}'
+                    f'</div>', unsafe_allow_html=True)
 
 # --- Kommentarbereich für ausgewählten Ort ---
 if angeklickter_ort:
