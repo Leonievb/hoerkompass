@@ -629,18 +629,19 @@ if not angeklickter_ort:
                     f'{text}</div>', unsafe_allow_html=True)
 
             elif u["typ"] == "neuer_ort":
-                o        = u["data"]
-                ort_name = val(o.get("name")) or "–"
-                datum    = val(o.get(hinzu_col)) if hinzu_col else ""
-                farbe    = "#adb5bd"
-                kat      = KATEGORIE_LABELS.get(val(o.get("kategorie")), val(o.get("kategorie")))
+                o         = u["data"]
+                ort_name  = val(o.get("name")) or "–"
+                datum     = val(o.get(hinzu_col)) if hinzu_col else ""
+                farbe     = "#adb5bd"
+                kat_farbe = hex_farbe(val(o.get("kategorie")))
+                kat       = KATEGORIE_LABELS.get(val(o.get("kategorie")), val(o.get("kategorie")))
                 anlage   = format_anlagetyp_html(val(o.get("anlagetyp")))
                 adresse  = val(o.get("adresse"))
                 hinweise = val(o.get("anlage_hinweise"))
                 st.markdown(
                     f'<div style="border-left:4px solid {farbe};padding-left:10px;margin-bottom:12px;">'
                     f'<span style="color:#888;font-size:11px;font-weight:bold;">🗺️ Neuer Ort</span><br>'
-                    f'<span style="color:{farbe};font-weight:bold;">{ort_name}</span> · '
+                    f'<span style="color:{kat_farbe};font-weight:bold;">{ort_name}</span> · '
                     f'<span style="color:#888;font-size:12px;">{datum}</span><br>'
                     f'<span style="color:gray;font-size:12px;">{kat}</span>'
                     f'{f"<br>📍 {adresse}" if adresse else ""}'
