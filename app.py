@@ -526,7 +526,7 @@ st.sidebar.markdown("---")
 st.sidebar.caption(f"{len(df_filtered)} Orte angezeigt von {len(df)} gesamt")
 
 # --- Buttons ---
-btn_col1, btn_col2, _ = st.columns([2,2,6])
+btn_col1, btn_col2, _ = st.columns([3,2,5])
 with btn_col1:
     if st.button("➕ Veranstaltungsort vorschlagen", type="secondary", use_container_width=True): dialog_neuer_ort()
 with btn_col2:
