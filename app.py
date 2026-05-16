@@ -570,7 +570,6 @@ if not angeklickter_ort:
     hinzu_col = "date_added" if "date_added" in df.columns else None
     if hinzu_col:
         neue_orte = df[df[hinzu_col].notna() & (df[hinzu_col].str.strip() != "")].copy()
-        st.write(f"date_added Spalte gefunden: {hinzu_col}, Orte mit Datum: {len(neue_orte) if hinzu_col else 0}")
         for _, o in neue_orte.iterrows():
             updates.append({
                 "typ":   "neuer_ort",
@@ -633,7 +632,7 @@ if not angeklickter_ort:
                 o        = u["data"]
                 ort_name = val(o.get("name")) or "–"
                 datum    = val(o.get(hinzu_col)) if hinzu_col else ""
-                farbe    = hex_farbe(val(o.get("kategorie")))
+                farbe    = "#adb5bd"
                 kat      = KATEGORIE_LABELS.get(val(o.get("kategorie")), val(o.get("kategorie")))
                 anlage   = format_anlagetyp_html(val(o.get("anlagetyp")))
                 adresse  = val(o.get("adresse"))
