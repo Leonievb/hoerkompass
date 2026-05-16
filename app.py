@@ -390,7 +390,14 @@ def zeige_sidebar_info(row):
 def dialog_neuer_ort():
     st.caption("Vielen Dank für deinen Beitrag! Vorschläge werden nach Prüfung in die Karte aufgenommen.")
     name    = st.text_input("Name des Ortes *", placeholder="z.B. Kulturzentrum Altona")
-    adresse = st.text_input("Adresse *", placeholder="z.B. Museumstraße 17, 22765 Hamburg")
+    addr_col1, addr_col2, addr_col3 = st.columns([3, 1, 2])
+    with addr_col1:
+        strasse = st.text_input("Straße *", placeholder="z.B. Museumstraße 17")
+    with addr_col2:
+        plz = st.text_input("PLZ *", placeholder="z.B. 22765")
+    with addr_col3:
+        stadt = st.text_input("Stadt *", placeholder="z.B. Hamburg")
+    adresse = f"{strasse}, {plz} {stadt}".strip(", ")
     kat_optionen = list(KATEGORIE_LABELS.keys()); kat_labels = list(KATEGORIE_LABELS.values())
     kat_wahl = st.selectbox("Kategorie *", options=kat_labels)
     kat_key  = kat_optionen[kat_labels.index(kat_wahl)]; kat_sonstige = ""
@@ -407,7 +414,9 @@ def dialog_neuer_ort():
     with col_ab:
         if st.button("✅ Vorschlag einreichen", use_container_width=True):
             if not name.strip(): st.warning("Bitte gib einen Namen ein.")
-            elif not adresse.strip(): st.warning("Bitte gib eine Adresse ein.")
+            elif not strasse.strip(): st.warning("Bitte gib eine Straße ein.")
+            elif not plz.strip(): st.warning("Bitte gib eine Postleitzahl ein.")
+            elif not stadt.strip(): st.warning("Bitte gib eine Stadt ein.")
             else:
                 save_neuer_ort(name.strip(),adresse.strip(),kat_key,kat_sonstige.strip(),
                                anlage_keys,anlage_sonstige.strip(),hinweise.strip(),website.strip(),email.strip())
