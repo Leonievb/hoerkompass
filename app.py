@@ -567,13 +567,15 @@ if not angeklickter_ort:
             })
 
     # Neue Orte als Updates
-    neue_orte = df[df["hinzugef\u00fcgt"].notna() & (df["hinzugef\u00fcgt"].str.strip() != "")].copy()
-    for _, o in neue_orte.iterrows():
-        updates.append({
-            "typ":   "neuer_ort",
-            "datum": val(o.get("hinzugefügt")),
-            "data":  o,
-        })
+    hinzu_col = next((c for c in df.columns if "hinzugef" in c.lower()), None)
+    if hinzu_col:
+        neue_orte = df[df[hinzu_col].notna() & (df[hinzu_col].str.strip() != "")].copy()
+        for _, o in neue_orte.iterrows():
+            updates.append({
+                "typ":   "neuer_ort",
+                "datum": val(o.get(hinzu_col)),
+                "data":  o,
+            })
 
     # Sortieren nach Datum (neueste zuerst) und auf 10 begrenzen
     def parse_datum(d):
