@@ -567,7 +567,7 @@ if not angeklickter_ort:
             })
 
     # Neue Orte als Updates
-    hinzu_col = next((c for c in df.columns if "hinzugef" in c.lower()), None)
+    hinzu_col = "date_added" if "date_added" in df.columns else None
     if hinzu_col:
         neue_orte = df[df[hinzu_col].notna() & (df[hinzu_col].str.strip() != "")].copy()
         for _, o in neue_orte.iterrows():
@@ -631,7 +631,7 @@ if not angeklickter_ort:
             elif u["typ"] == "neuer_ort":
                 o        = u["data"]
                 ort_name = val(o.get("name")) or "–"
-                datum    = val(o.get(hinzu_col))
+                datum    = val(o.get(hinzu_col)) if hinzu_col else ""
                 farbe    = hex_farbe(val(o.get("kategorie")))
                 kat      = KATEGORIE_LABELS.get(val(o.get("kategorie")), val(o.get("kategorie")))
                 anlage   = format_anlagetyp_html(val(o.get("anlagetyp")))
