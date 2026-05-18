@@ -200,11 +200,14 @@ ANLAGETYP_ICONS = {
     "induktion":"🔵 Induktion (T-Spule, Hörschleife)","infrarot":"🟡 Infrarot","funk":"🟠 Funk",
     "mobile_connect":"📱 MobileConnect",
     "untertitel":"💬 Untertitel",
-    "audioguide":"🎧 Audioguide","rogeron_vorhanden":"🎙 Roger On (vorhanden)",
-    "rogeron_mitbringen":"🎙 Roger On (mitbringen)",
+    "audioguide":"🎧 Audioguide",
+    "rogeron":"🎙 Roger On",
+    "rogeron_vorhanden":"🎙 Roger On",
+    "rogeron_mitbringen":"🎙 Roger On",
     "sitzplatzreservierung":"💺 Sitzplatzreservierung",
     "auracast":"🛜 Auracast",
-    "DGS (ausgewählt)":"🤟 DGS (ausgewählte Events)",
+    "DGS":"🤟 DGS",
+    "DGS (ausgewählt)":"🤟 DGS",
     "keine":"❌ Keine",
     "anderes":"➕ Anderes (bitte beschreiben)",
 }
@@ -247,20 +250,26 @@ def format_anlagetyp_html(s):
     if pd.isna(s) or not str(s).strip(): return "–"
     return "<br>".join([ANLAGETYP_ICONS.get(t.strip(), t.strip()) for t in str(s).split(",") if t.strip()])
 
+def get_verfuegbarkeit(row):
+    """Liest die Verfügbarkeit-Spalte robust aus (Encoding-sicher)."""
+    for col in row.keys():
+        if "verf" in str(col).lower() and "bark" in str(col).lower():
+            return val(row.get(col))
+    return ""
+
 def format_anlagetyp_mit_verfuegbarkeit_html(anlagetyp_str, verfuegbarkeit_str):
     """Formatiert Anlagetypen mit optionaler Verfügbarkeitsangabe in grauer Kleinschrift.
-    'immer' wird weggelassen. Anlagetyp und Verfügbarkeit sind komma-getrennt und index-korrespondierend."""
+    'immer' wird weggelassen."""
     if pd.isna(anlagetyp_str) or not str(anlagetyp_str).strip():
         return "–"
     anlagen = [t.strip() for t in str(anlagetyp_str).split(",") if t.strip()]
     verfuegbarkeiten = []
-    if verfuegbarkeit_str and not pd.isna(verfuegbarkeit_str) and str(verfuegbarkeit_str).strip():
+    if verfuegbarkeit_str and str(verfuegbarkeit_str).strip():
         verfuegbarkeiten = [v.strip() for v in str(verfuegbarkeit_str).split(",")]
     zeilen = []
     for i, anlage in enumerate(anlagen):
-        label = ANLAGETYP_ICONS.get(anlage, anlage)
-        verfueg = verfuegbarkeiten[i] if i < len(verfuegbarkeiten) else ""
-        # "immer" weglassen
+        label   = ANLAGETYP_ICONS.get(anlage.strip(), anlage.strip())
+        verfueg = verfuegbarkeiten[i].strip() if i < len(verfuegbarkeiten) else ""
         if verfueg.lower() in ("immer", ""):
             zeilen.append(label)
         else:
@@ -331,7 +340,7 @@ def build_popup(row):
     kategorie    = KATEGORIE_LABELS.get(val(row.get("kategorie")), val(row.get("kategorie")))
     anlage       = format_anlagetyp_mit_verfuegbarkeit_html(
                        val(row.get("anlagetyp")),
-                       val(row.get("Verfügbarkeit")) if "Verfügbarkeit" in row else ""
+                       get_verfuegbarkeit(row)
                    )
     hinweise     = val(row.get("anlage_hinweise"))
     website      = val(row.get("website"))
@@ -390,7 +399,7 @@ def zeige_sidebar_info(row):
 
     konfession_str    = f", {KONFESSION_LABELS.get(konfession,konfession)}" if konfession else ""
     adresse_zeile     = build_adresse(row)
-    verfuegbarkeit_str = val(row.get("Verfügbarkeit")) if "Verfügbarkeit" in row else ""
+    verfuegbarkeit_str = get_verfuegbarkeit(row)
     verfuegbarkeiten   = [v.strip() for v in verfuegbarkeit_str.split(",")] if verfuegbarkeit_str else []
     anlage_zeilen = ""
     if anlagetypen:
@@ -675,7 +684,10 @@ if not angeklickter_ort:
                 farbe     = "#adb5bd"
                 kat_farbe = hex_farbe(val(o.get("kategorie")))
                 kat       = KATEGORIE_LABELS.get(val(o.get("kategorie")), val(o.get("kategorie")))
-                anlage    = format_anlagetyp_html(val(o.get("anlagetyp")))
+                anlage    = format_anlagetyp_mit_verfuegbarkeit_html(
+                                val(o.get("anlagetyp")),
+                                get_verfuegbarkeit(o)
+                            )
                 adresse   = build_adresse(o)
                 hinweise  = val(o.get("anlage_hinweise"))
                 st.markdown(
