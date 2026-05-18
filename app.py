@@ -266,10 +266,9 @@ def build_adresse(row, zeige_bezirk=False):
     stadt     = val(row.get("stadt")) if "stadt" in row else ""
     land      = val(row.get("land")) if "land" in row else ""
     teile = list(filter(None, [adresse, plz, stadtteil]))
-    if bezirk:
-        teile.append(f"({bezirk})")
-    # Stadt anhängen wenn nicht schon enthalten
-    if stadt and stadt.lower() not in " ".join(teile).lower():
+    if stadtteil:
+        teile.append(f"({stadtteil})")
+    if stadt:
         teile.append(stadt)
     # Land nur anhängen wenn nicht Deutschland
     if land and land.strip().lower() not in ("deutschland", "germany", ""):
