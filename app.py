@@ -65,7 +65,6 @@ def clear_kommentare_cache():
     load_kommentare.clear()
 
 def get_bewertete_ort_ids() -> set:
-    """Gibt alle ort_ids zurück die mindestens eine freigeschaltete Bewertung haben."""
     kommentare = load_kommentare()
     if kommentare.empty:
         return set()
@@ -81,7 +80,6 @@ def append_row(tab_name: str, row: dict):
 
 # --- E-Mail Benachrichtigung ---
 def send_notification(betreff: str, inhalt: str):
-    """Sendet eine Benachrichtigungs-E-Mail an die Admins."""
     try:
         sender   = st.secrets["email"]["EMAIL_SENDER"]
         password = st.secrets["email"]["EMAIL_PASSWORD"]
@@ -95,7 +93,7 @@ def send_notification(betreff: str, inhalt: str):
             server.login(sender, password)
             server.sendmail(sender, empfaenger, msg.as_string())
     except KeyError:
-        pass  # Lokal ohne Secrets – überspringen
+        pass
     except Exception as e:
         st.warning(f"E-Mail konnte nicht gesendet werden: {e}")
 
@@ -259,6 +257,21 @@ def website_link_html(website, label="🌐 Website"):
     url = website if website.startswith("http") else f"https://{website}"
     return f'<a href="{url}" target="_blank">{label}</a><br>'
 
+def build_adresse(row):
+    """Baut eine vollständige Adresszeile inkl. Stadt und Land (wenn nicht Deutschland)."""
+    adresse  = val(row.get("adresse"))
+    plz      = val(row.get("plz"))
+    stadtteil= val(row.get("stadtteil"))
+    stadt    = val(row.get("stadt")) if "stadt" in row else ""
+    land     = val(row.get("land")) if "land" in row else ""
+    teile = list(filter(None, [adresse, plz, stadtteil]))
+    if stadt and stadt.lower() not in " ".join(teile).lower():
+        teile.append(stadt)
+    # Land nur anhängen wenn nicht Deutschland
+    if land and land.strip().lower() not in ("deutschland", "germany", ""):
+        teile.append(land)
+    return " ".join(teile) or "–"
+
 def berechne_ampel(ort_id: str) -> dict:
     kommentare = load_kommentare()
     if kommentare.empty:
@@ -291,9 +304,6 @@ def ampel_html(ort_id: str, fontsize: str = "13px") -> str:
 
 def build_popup(row):
     name         = val(row.get("name")) or "–"
-    adresse      = val(row.get("adresse"))
-    plz          = val(row.get("plz"))
-    stadtteil    = val(row.get("stadtteil"))
     kategorie    = KATEGORIE_LABELS.get(val(row.get("kategorie")), val(row.get("kategorie")))
     anlage       = format_anlagetyp_html(val(row.get("anlagetyp")))
     hinweise     = val(row.get("anlage_hinweise"))
@@ -305,7 +315,7 @@ def build_popup(row):
     quelle_datum = val(row.get("quelle_datum"))
     ort_id       = val(row.get("ort_id"))
 
-    adresse_zeile     = " ".join(filter(None,[adresse,plz,stadtteil])) or "–"
+    adresse_zeile     = build_adresse(row)
     website_html      = website_link_html(website)
     hinweise_html     = f"<b>Hinweise</b><br>{hinweise}<br><br>" if hinweise else ""
     konfession_html   = f'⛪ {KONFESSION_LABELS.get(konfession,konfession)}<br>' if konfession else ""
@@ -333,9 +343,6 @@ def build_popup(row):
 
 def zeige_sidebar_info(row):
     name         = val(row.get("name")) or "–"
-    adresse      = val(row.get("adresse"))
-    plz          = val(row.get("plz"))
-    stadtteil    = val(row.get("stadtteil"))
     bezirk       = val(row.get("bezirk"))
     kategorie    = KATEGORIE_LABELS.get(val(row.get("kategorie")), val(row.get("kategorie")))
     anlagetypen  = get_anlagetyp_list(val(row.get("anlagetyp")))
@@ -355,7 +362,9 @@ def zeige_sidebar_info(row):
             st.session_state["angeklickter_ort"] = None; st.rerun()
 
     konfession_str    = f", {KONFESSION_LABELS.get(konfession,konfession)}" if konfession else ""
-    adresse_zeile     = " ".join(filter(None,[adresse,plz,stadtteil,f"({bezirk})" if bezirk else ""])) or "–"
+    adresse_zeile     = build_adresse(row)
+    if bezirk:
+        adresse_zeile += f" ({bezirk})"
     anlage_zeilen     = "".join(f"{ANLAGETYP_ICONS.get(a,a)}<br>" for a in anlagetypen) if anlagetypen else ""
     anlage_header     = "<b>Mehr Zugänglichkeit durch:</b><br>" if anlagetypen else ""
     ermaessigung_html = f"🎟 <b>Ermäßigung:</b><br> {ermaessigung}<br><br>" if ermaessigung else ""
@@ -396,8 +405,13 @@ def dialog_neuer_ort():
     with addr_col2:
         plz = st.text_input("PLZ *", placeholder="z.B. 22765")
     with addr_col3:
-        stadt = st.text_input("Stadt *", placeholder="z.B. Hamburg")
-    adresse = f"{strasse}, {plz} {stadt}".strip(", ")
+        stadt = st.text_input("Stadt *", value="Hamburg")
+    land_col, _ = st.columns([2, 3])
+    with land_col:
+        land = st.text_input("Land *", value="Deutschland")
+    # Land nur in Adresse aufnehmen wenn nicht Deutschland
+    land_in_adresse = land.strip() if land.strip().lower() not in ("deutschland", "germany", "") else ""
+    adresse = ", ".join(filter(None, [strasse.strip(), f"{plz.strip()} {stadt.strip()}".strip(), land_in_adresse]))
     kat_optionen = list(KATEGORIE_LABELS.keys()); kat_labels = list(KATEGORIE_LABELS.values())
     kat_wahl = st.selectbox("Kategorie *", options=kat_labels)
     kat_key  = kat_optionen[kat_labels.index(kat_wahl)]; kat_sonstige = ""
@@ -417,12 +431,15 @@ def dialog_neuer_ort():
             elif not strasse.strip(): st.warning("Bitte gib eine Straße ein.")
             elif not plz.strip(): st.warning("Bitte gib eine Postleitzahl ein.")
             elif not stadt.strip(): st.warning("Bitte gib eine Stadt ein.")
+            elif not land.strip(): st.warning("Bitte gib ein Land ein.")
             else:
-                save_neuer_ort(name.strip(),adresse.strip(),kat_key,kat_sonstige.strip(),
+                # Vollständige Adresse für Sheet immer mit Stadt und Land
+                adresse_sheet = ", ".join(filter(None, [strasse.strip(), f"{plz.strip()} {stadt.strip()}".strip(), land.strip()]))
+                save_neuer_ort(name.strip(),adresse_sheet,kat_key,kat_sonstige.strip(),
                                anlage_keys,anlage_sonstige.strip(),hinweise.strip(),website.strip(),email.strip())
                 send_notification(
                     "Neuer Veranstaltungsort vorgeschlagen",
-                    f"Name: {name.strip()}\nAdresse: {adresse.strip()}\nKategorie: {kat_key}\nHinweise: {hinweise.strip()}\nWebsite: {website.strip()}\nEinsender: {email.strip()}"
+                    f"Name: {name.strip()}\nAdresse: {adresse}\nKategorie: {kat_key}\nHinweise: {hinweise.strip()}\nWebsite: {website.strip()}\nEinsender: {email.strip()}"
                 )
                 st.success("Danke! Dein Vorschlag wurde gespeichert und wird geprüft.")
                 st.balloons()
@@ -553,41 +570,27 @@ if not angeklickter_ort:
     kommentare_alle = load_kommentare()
     ort_id_zu_name = dict(zip(df["ort_id"].astype(str), df["name"].astype(str)))
 
-    # Kommentare als Updates
     updates = []
     if not kommentare_alle.empty:
         moderierte = kommentare_alle[
             kommentare_alle["moderiert"].str.strip().str.lower() == "ja"
         ].copy()
         for _, k in moderierte.iterrows():
-            updates.append({
-                "typ":    "kommentar",
-                "datum":  val(k.get("datum")),
-                "data":   k,
-            })
+            updates.append({"typ": "kommentar", "datum": val(k.get("datum")), "data": k})
 
-    # Neue Orte als Updates
     hinzu_col = "date_added" if "date_added" in df.columns else None
     if hinzu_col:
         neue_orte = df[df[hinzu_col].notna() & (df[hinzu_col].str.strip() != "")].copy()
         for _, o in neue_orte.iterrows():
-            updates.append({
-                "typ":   "neuer_ort",
-                "datum": val(o.get(hinzu_col)),
-                "data":  o,
-            })
+            updates.append({"typ": "neuer_ort", "datum": val(o.get(hinzu_col)), "data": o})
 
-    # Sortieren nach Datum (neueste zuerst) und auf 10 begrenzen
     def parse_datum(d):
-        """Versucht deutsches Datum zu parsen für Sortierung."""
         monate = {"Januar":1,"Februar":2,"März":3,"April":4,"Mai":5,"Juni":6,
                   "Juli":7,"August":8,"September":9,"Oktober":10,"November":11,"Dezember":12}
         try:
-            # Format: "15. Mai 2026"
             teile = d.replace(".", "").split()
             if len(teile) == 3:
                 return (int(teile[2]), monate.get(teile[1], 0), int(teile[0]))
-            # Format: "2026-05-15"
             return tuple(int(x) for x in d.split("-"))
         except Exception:
             return (0, 0, 0)
@@ -635,16 +638,16 @@ if not angeklickter_ort:
                 farbe     = "#adb5bd"
                 kat_farbe = hex_farbe(val(o.get("kategorie")))
                 kat       = KATEGORIE_LABELS.get(val(o.get("kategorie")), val(o.get("kategorie")))
-                anlage   = format_anlagetyp_html(val(o.get("anlagetyp")))
-                adresse  = val(o.get("adresse"))
-                hinweise = val(o.get("anlage_hinweise"))
+                anlage    = format_anlagetyp_html(val(o.get("anlagetyp")))
+                adresse   = build_adresse(o)
+                hinweise  = val(o.get("anlage_hinweise"))
                 st.markdown(
                     f'<div style="border-left:4px solid {farbe};padding-left:10px;margin-bottom:12px;">'
                     f'<span style="color:#888;font-size:11px;font-weight:bold;">🗺️ Neuer Ort</span><br>'
                     f'<span style="color:{kat_farbe};font-weight:bold;">{ort_name}</span> · '
                     f'<span style="color:#888;font-size:12px;">{datum}</span><br>'
                     f'<span style="color:gray;font-size:12px;">{kat}</span>'
-                    f'{f"<br>📍 {adresse}" if adresse else ""}'
+                    f'{f"<br>📍 {adresse}" if adresse and adresse != "–" else ""}'
                     f'{f"<br>{anlage}" if anlage != "–" else ""}'
                     f'{f"<br><i>{hinweise}</i>" if hinweise else ""}'
                     f'</div>', unsafe_allow_html=True)
