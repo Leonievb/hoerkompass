@@ -257,14 +257,18 @@ def website_link_html(website, label="🌐 Website"):
     url = website if website.startswith("http") else f"https://{website}"
     return f'<a href="{url}" target="_blank">{label}</a><br>'
 
-def build_adresse(row):
+def build_adresse(row, zeige_bezirk=False):
     """Baut eine vollständige Adresszeile inkl. Stadt und Land (wenn nicht Deutschland)."""
-    adresse  = val(row.get("adresse"))
-    plz      = val(row.get("plz"))
-    stadtteil= val(row.get("stadtteil"))
-    stadt    = val(row.get("stadt")) if "stadt" in row else ""
-    land     = val(row.get("land")) if "land" in row else ""
+    adresse   = val(row.get("adresse"))
+    plz       = val(row.get("plz"))
+    stadtteil = val(row.get("stadtteil"))
+    bezirk    = val(row.get("bezirk")) if zeige_bezirk else ""
+    stadt     = val(row.get("stadt")) if "stadt" in row else ""
+    land      = val(row.get("land")) if "land" in row else ""
     teile = list(filter(None, [adresse, plz, stadtteil]))
+    if bezirk:
+        teile.append(f"({bezirk})")
+    # Stadt anhängen wenn nicht schon enthalten
     if stadt and stadt.lower() not in " ".join(teile).lower():
         teile.append(stadt)
     # Land nur anhängen wenn nicht Deutschland
@@ -363,8 +367,6 @@ def zeige_sidebar_info(row):
 
     konfession_str    = f", {KONFESSION_LABELS.get(konfession,konfession)}" if konfession else ""
     adresse_zeile     = build_adresse(row)
-    if bezirk:
-        adresse_zeile += f" ({bezirk})"
     anlage_zeilen     = "".join(f"{ANLAGETYP_ICONS.get(a,a)}<br>" for a in anlagetypen) if anlagetypen else ""
     anlage_header     = "<b>Mehr Zugänglichkeit durch:</b><br>" if anlagetypen else ""
     ermaessigung_html = f"🎟 <b>Ermäßigung:</b><br> {ermaessigung}<br><br>" if ermaessigung else ""
@@ -405,7 +407,7 @@ def dialog_neuer_ort():
     with addr_col2:
         plz = st.text_input("PLZ *", placeholder="z.B. 22765")
     with addr_col3:
-        stadt = st.text_input("Stadt *", value="Hamburg")
+        stadt = st.text_input("Stadt *", placeholder="z.B. Hamburg")
     land_col, _ = st.columns([2, 3])
     with land_col:
         land = st.text_input("Land *", value="Deutschland")
