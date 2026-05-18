@@ -247,6 +247,26 @@ def format_anlagetyp_html(s):
     if pd.isna(s) or not str(s).strip(): return "–"
     return "<br>".join([ANLAGETYP_ICONS.get(t.strip(), t.strip()) for t in str(s).split(",") if t.strip()])
 
+def format_anlagetyp_mit_verfuegbarkeit_html(anlagetyp_str, verfuegbarkeit_str):
+    """Formatiert Anlagetypen mit optionaler Verfügbarkeitsangabe in grauer Kleinschrift.
+    'immer' wird weggelassen. Anlagetyp und Verfügbarkeit sind komma-getrennt und index-korrespondierend."""
+    if pd.isna(anlagetyp_str) or not str(anlagetyp_str).strip():
+        return "–"
+    anlagen = [t.strip() for t in str(anlagetyp_str).split(",") if t.strip()]
+    verfuegbarkeiten = []
+    if verfuegbarkeit_str and not pd.isna(verfuegbarkeit_str) and str(verfuegbarkeit_str).strip():
+        verfuegbarkeiten = [v.strip() for v in str(verfuegbarkeit_str).split(",")]
+    zeilen = []
+    for i, anlage in enumerate(anlagen):
+        label = ANLAGETYP_ICONS.get(anlage, anlage)
+        verfueg = verfuegbarkeiten[i] if i < len(verfuegbarkeiten) else ""
+        # "immer" weglassen
+        if verfueg.lower() in ("immer", ""):
+            zeilen.append(label)
+        else:
+            zeilen.append(f'{label} <span style="color:#aaa;font-size:11px;">{verfueg}</span>')
+    return "<br>".join(zeilen)
+
 def val(v):
     return "" if pd.isna(v) or str(v).strip().lower() in ["nan","none",""] else str(v).strip()
 
@@ -265,17 +285,16 @@ def build_adresse(row, zeige_bezirk=False):
     bezirk    = val(row.get("bezirk")) if zeige_bezirk else ""
     stadt     = val(row.get("stadt")) if "stadt" in row else ""
     land      = val(row.get("land")) if "land" in row else ""
-    teile = list(filter(None, [
-        adresse,
-        f" {plz}" if plz else "",
-        f" {stadtteil}" if stadtteil else "",
-        f", {stadt}" if stadt else "",
-        f", {land}" if land and land.strip().lower() not in ("deutschland", "germany", "") else ""
-    ]))
+    teile = list(filter(None, [adresse, plz, stadtteil]))
+    if bezirk:
+        teile.append(f"({bezirk})")
+    # Stadt anhängen wenn nicht schon enthalten
+    if stadt and stadt.lower() not in " ".join(teile).lower():
+        teile.append(stadt)
     # Land nur anhängen wenn nicht Deutschland
     if land and land.strip().lower() not in ("deutschland", "germany", ""):
-        teile.append(f", {land}")
-    return "".join(teile) or "–"
+        teile.append(land)
+    return " ".join(teile) or "–"
 
 def berechne_ampel(ort_id: str) -> dict:
     kommentare = load_kommentare()
@@ -310,7 +329,10 @@ def ampel_html(ort_id: str, fontsize: str = "13px") -> str:
 def build_popup(row):
     name         = val(row.get("name")) or "–"
     kategorie    = KATEGORIE_LABELS.get(val(row.get("kategorie")), val(row.get("kategorie")))
-    anlage       = format_anlagetyp_html(val(row.get("anlagetyp")))
+    anlage       = format_anlagetyp_mit_verfuegbarkeit_html(
+                       val(row.get("anlagetyp")),
+                       val(row.get("Verfügbarkeit")) if "Verfügbarkeit" in row else ""
+                   )
     hinweise     = val(row.get("anlage_hinweise"))
     website      = val(row.get("website"))
     verifiziert  = val(row.get("verifiziert"))
@@ -368,7 +390,19 @@ def zeige_sidebar_info(row):
 
     konfession_str    = f", {KONFESSION_LABELS.get(konfession,konfession)}" if konfession else ""
     adresse_zeile     = build_adresse(row)
-    anlage_zeilen     = "".join(f"{ANLAGETYP_ICONS.get(a,a)}<br>" for a in anlagetypen) if anlagetypen else ""
+    verfuegbarkeit_str = val(row.get("Verfügbarkeit")) if "Verfügbarkeit" in row else ""
+    verfuegbarkeiten   = [v.strip() for v in verfuegbarkeit_str.split(",")] if verfuegbarkeit_str else []
+    anlage_zeilen = ""
+    if anlagetypen:
+        zeilen = []
+        for i, a in enumerate(anlagetypen):
+            label   = ANLAGETYP_ICONS.get(a, a)
+            verfueg = verfuegbarkeiten[i] if i < len(verfuegbarkeiten) else ""
+            if verfueg.lower() in ("immer", ""):
+                zeilen.append(f"{label}<br>")
+            else:
+                zeilen.append(f'{label} <span style="color:#aaa;font-size:11px;">{verfueg}</span><br>')
+        anlage_zeilen = "".join(zeilen)
     anlage_header     = "<b>Mehr Zugänglichkeit durch:</b><br>" if anlagetypen else ""
     ermaessigung_html = f"🎟 <b>Ermäßigung:</b><br> {ermaessigung}<br><br>" if ermaessigung else ""
     hinweise_html     = f"<b>Hinweise</b><br><i>{hinweise}</i><br><br>" if hinweise else ""
