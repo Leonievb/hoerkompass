@@ -268,7 +268,7 @@ def build_adresse(row, zeige_bezirk=False):
     teile = list(filter(None, [
         adresse,
         f" {plz}" if plz else "",
-        f"{ stadtteil}" if stadtteil else "",
+        f" {stadtteil}" if stadtteil else "",
         f", {stadt}" if stadt else "",
         f", {land}" if land and land.strip().lower() not in ("deutschland", "germany", "") else ""
     ]))
