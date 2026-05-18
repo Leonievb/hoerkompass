@@ -552,8 +552,10 @@ ausschliessen_keys = [label_zu_key.get(l,l) for l in ausschliessen_labels]
 
 alle_anlagen = sorted(set(t.strip() for typen in df["anlagetyp"].dropna()
     for t in str(typen).split(",") if t.strip()))
+# Label für jede Anlage aus der CSV – direkt aus den CSV-Werten
 anlage_labels = [ANLAGETYP_ICONS.get(a,a) for a in alle_anlagen]
-anlage_label_zu_key = {v:k for k,v in ANLAGETYP_ICONS.items()}
+# Umgekehrtes Mapping: Label → CSV-Key (nur die tatsächlich vorkommenden Keys)
+anlage_label_zu_key = {ANLAGETYP_ICONS.get(a,a): a for a in alle_anlagen}
 ausgewaehlte_anlage_labels = st.sidebar.multiselect("Art der Hörunterstützung", options=anlage_labels,
     default=[], placeholder="Alle Arten der Hörunterstützung anzeigen", key="anlagetyp_filter")
 ausgewaehlte_anlagen = [anlage_label_zu_key.get(l,l) for l in ausgewaehlte_anlage_labels]
