@@ -267,15 +267,15 @@ def build_adresse(row, zeige_bezirk=False):
     land      = val(row.get("land")) if "land" in row else ""
     teile = list(filter(None, [
         adresse,
-        f"{plz}" if plz else "",
-        f"{stadtteil}" if stadtteil else "",
+        f" {plz}" if plz else "",
+        f"{ stadtteil}" if stadtteil else "",
         f", {stadt}" if stadt else "",
         f", {land}" if land and land.strip().lower() not in ("deutschland", "germany", "") else ""
     ]))
     # Land nur anhängen wenn nicht Deutschland
     if land and land.strip().lower() not in ("deutschland", "germany", ""):
         teile.append(f", {land}")
-    return " ".join(teile) or "–"
+    return "".join(teile) or "–"
 
 def berechne_ampel(ort_id: str) -> dict:
     kommentare = load_kommentare()
