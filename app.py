@@ -83,7 +83,7 @@ def send_notification(betreff: str, inhalt: str):
     try:
         sender   = st.secrets["email"]["EMAIL_SENDER"]
         password = st.secrets["email"]["EMAIL_PASSWORD"]
-        empfaenger = ["leonie@vonberlin.de"]
+        empfaenger = ["leonie@vonberlin.de", "xmariinaax@gmail.com"]
         msg = MIMEMultipart()
         msg["From"]    = sender
         msg["To"]      = ", ".join(empfaenger)
